@@ -124,7 +124,7 @@ function App() {
         console.log('Success');
         const isValid = await validateForm(currentStep);
         if (isValid) {
-
+            setIsSubmitted(true);
             // send data to the server
             try {
                 const response = await fetch('/api/applications', {
@@ -142,7 +142,7 @@ function App() {
                 }
                 console.log('Form submitted:', formData);
                 setApplicationId(data.applicationId);
-                setIsSubmitted(true);
+
                 setIsLoading(false);
             } catch (error) {
                 console.error('Submission error:', error);
