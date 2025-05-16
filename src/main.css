@@ -53,22 +53,50 @@ h2 {
     z-index: 1;
 }
 
+/* Stepper states: completed, active, inactive */
 .step {
-    width: 120px;
+    width: 140px;
     text-align: center;
-    padding: 10px;
-    background-color: white;
+    padding: 12px 10px;
+    background-color: #bbb; /* INACTIVE step background */
     border: 2px solid #ddd;
-    border-radius: 20px;
-    font-size: 14px;
+    border-radius: 30px;
+    font-size: 16px;
+    font-weight: 500;
     position: relative;
     z-index: 2;
+    transition: background 0.2s, color 0.2s, box-shadow 0.2s, border-color 0.2s;
+    color: #fff;
+    cursor: pointer;
 }
-
+.step.completed {
+    background-color: #299a1a;
+    border-color: #299a1a;
+    color: #fff;
+}
+.step.completed:before {
+    position: absolute;
+    left: 16px;
+    font-size: 18px;
+    font-weight: bold;
+    color: #fff;
+}
 .step.active {
     border-color: #e65c00;
     background-color: #e65c00;
-    color: white;
+    color: #fff;
+    font-size: 19px;
+    font-weight: 700;
+    box-shadow: 0 0 12px 0 #e65c0055;
+}
+.step:not(.active):not(.completed):hover {
+    background-color: #ccc;
+    border-color: #e65c00;
+    color: #222;
+}
+.step[disabled] {
+    cursor: not-allowed;
+    opacity: 0.6;
 }
 
 .form-step {
@@ -85,7 +113,9 @@ label {
     font-weight: bold;
 }
 
-input, select, textarea {
+input,
+select,
+textarea {
     width: 100%;
     padding: 10px;
     border: 1px solid #ddd;
@@ -93,7 +123,9 @@ input, select, textarea {
     font-size: 16px;
 }
 
-input.error, select.error, textarea.error {
+input.error,
+select.error,
+textarea.error {
     border-color: red;
 }
 
@@ -118,32 +150,48 @@ input.error, select.error, textarea.error {
     margin-bottom: 0;
 }
 
+/* BUTTONS */
 .button-group {
     display: flex;
     justify-content: space-between;
     margin-top: 30px;
 }
 
+/* Primary button */
 button {
-    padding: 10px 20px;
+    padding: 10px 24px;
     background-color: #e65c00;
     color: white;
     border: none;
-    border-radius: 4px;
-    font-size: 16px;
+    border-radius: 6px;
+    font-size: 18px;
+    font-weight: 600;
     cursor: pointer;
+    transition: background 0.2s, color 0.2s;
 }
 
-button:hover {
+/* Disabled button styles */
+button:disabled,
+button[disabled] {
+    background-color: #ccc !important;
+    color: #888 !important;
+    cursor: not-allowed !important;
+    border-color: #ddd !important;
+    box-shadow: none !important;
+}
+
+/* Only hover for enabled buttons */
+button:not(:disabled):hover,
+button:not([disabled]):hover {
     background-color: #d45500;
 }
 
-button[type="button"]:first-child {
+/* secondary button styling */
+.button-group button[type="button"]:first-child {
     background-color: #ddd;
     color: #333;
 }
-
-button[type="button"]:first-child:hover {
+.button-group button[type="button"]:first-child:not(:disabled):hover {
     background-color: #ccc;
 }
 

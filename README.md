@@ -30,37 +30,25 @@ A multi-stage application form for individuals interested in visiting Mars.
 git clone https://github.com/GuruAlex167/cozii-mars-visit.git
 ```
 
-2. Install frontend dependencies 
+2. Install dependencies 
 ```
 cd cozii-mars-visit  
 npm install
 ```
 
-3. Install backend dependencies   
-```
-cd server   
-npm install
-```
 
-4. Create a .env file in the server directory with the following:   
+3. Create a .env file in the server directory with the following:   
 Note: Update the MongoDB URI if using MongoDB Atlas   
 ```   
 MONGODB_URI=mongodb://localhost:27017/mars-application   
 PORT=5000
 ```
 
-### Running the Application
-
-1. Start the backend server  
+4. Running the Application
 ```
-cd server  
-npm start
+npm run start
 ```
 
-2. In a new terminal, start the frontend   
-```
-cd cozii-mars-visit  
-npm start
-```
+5. Open your browser and visit `http://localhost:3000`
 
-3. Open your browser and visit `http://localhost:3000`
+

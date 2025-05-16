@@ -35,6 +35,7 @@ function App() {
     const [formErrors, setFormErrors] = useState({});
     const [isSubmitted, setIsSubmitted] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
+    const [applicationId, setApplicationId] = useState("");
 
     const handleChange = (e) => {
         const {name, value, type, checked} = e.target;
@@ -93,14 +94,19 @@ function App() {
     };
 
     const handleNext = async () => {
-        const isValid = await validateForm(currentStep);
-        if (isValid) {
-            if (currentStep === maxStep) {
-                setMaxStep(maxStep + 1);
-            }
-            setCurrentStep(currentStep + 1);
-            setTimeout(() => setFormErrors({}), 0);
-        }
+        setIsLoading(true);
+        validateForm(currentStep)
+            .then(isValid => {
+                    if (isValid) {
+                        if (currentStep === maxStep) {
+                            setMaxStep(maxStep => maxStep + 1);
+                        }
+                        setCurrentStep(currentStep => currentStep + 1);
+                        setTimeout(() => setFormErrors({}), 10);
+                    }
+                }
+            );
+        setIsLoading(false);
     };
 
     const handlePrev = () => {
@@ -110,6 +116,10 @@ function App() {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        if (isLoading) {
+            return;
+        }
+
         setIsLoading(true);
         console.log('Success');
         const isValid = await validateForm(currentStep);
@@ -117,7 +127,7 @@ function App() {
 
             // send data to the server
             try {
-                const response = await fetch('http://localhost:5000/api/applications', {
+                const response = await fetch('/api/applications', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -131,6 +141,7 @@ function App() {
                     throw new Error(data.message || 'Submission failed');
                 }
                 console.log('Form submitted:', formData);
+                setApplicationId(data.applicationId);
                 setIsSubmitted(true);
                 setIsLoading(false);
             } catch (error) {
@@ -147,10 +158,9 @@ function App() {
     };
 
     const handleStepNavigation = (step) => {
-        if (step < maxStep) {
+        if (step <= maxStep) {
             setCurrentStep(step);
         }
-        return step;
     }
 
     const renderForm = () => {
@@ -161,7 +171,7 @@ function App() {
                     <div className="button-group">
                         <div></div>
                         {/* Empty div to maintain flex layout */}
-                        <button type="button" onClick={handleNext}>Next</button>
+                        <button className="next-button" type="button" onClick={handleNext}>Next</button>
                     </div>
                 </>;
             case 2:
@@ -169,7 +179,7 @@ function App() {
                     <TravelPreferences formData={formData} handleChange={handleChange} formErrors={formErrors}/>
                     <div className="button-group">
                         <button type="button" onClick={handlePrev}>Previous</button>
-                        <button type="button" onClick={handleNext}>Next</button>
+                        <button className="next-button" type="button" onClick={handleNext}>Next</button>
                     </div>
                 </>;
             case 3:
@@ -177,7 +187,9 @@ function App() {
                     <HealthAndSafetyForm formData={formData} handleChange={handleChange} formErrors={formErrors}/>
                     <div className="button-group">
                         <button type="button" onClick={handlePrev}>Previous</button>
-                        <button type="submit" disabled={isLoading}>Submit Application</button>
+                        <button className="next-button" type="submit" disabled={isLoading || isSubmitted}>Submit
+                            Application
+                        </button>
                     </div>
                 </>;
 
@@ -192,6 +204,8 @@ function App() {
                 <h2>Application Submitted Successfully!!!</h2>
                 <p>Thank you, {formData.firstName} {formData.lastName}, for your interest in visiting Mars.</p>
                 <p>We will contact you at {formData.email} with further information.</p>
+                <p>If you have any questions feel free to reach out at AlexDale167@gmail.com</p>
+                <p>Please reference ID:{applicationId}</p>
             </div>
         );
     };
@@ -203,21 +217,43 @@ function App() {
 
                 {!isSubmitted && (
                     <div className="progress-indicator">
-                        <div className={`step ${currentStep === 1
-                            ? 'active'
-                            : ''}`}
-                             onClick={() => {handleStepNavigation(1)}}>1. Personal Info
-                        </div>
-                        <div className={`step ${currentStep === 2
-                            ? 'active'
-                            : ''}`}
-                             onClick={() => {handleStepNavigation(2)}}>2. Travel Preferences
-                        </div>
-                        <div className={`step ${currentStep === 3
-                            ? 'active'
-                            : ''}`}
-                             onClick={() => {handleStepNavigation(3)}}>3. Health & Safety
-                        </div>
+                        <button type="button"
+                                className={`step ${currentStep === 1 ? 'active' : ''}
+                                    ${currentStep > 1 ? ' completed' : ''}`}
+                                onClick={() => {
+                                    handleStepNavigation(1)
+                                }}
+                                aria-label={
+                                    currentStep === 1
+                                        ? "Current Step: Personal Info"
+                                        : currentStep > 1
+                                            ? "Completed: Personal Info"
+                                            : "Personal Info"
+                                }>1. Personal Info
+                        </button>
+                        <button type="button"
+                                className={`step ${currentStep === 2 ? 'active' : ''}
+                                ${currentStep > 2 ? ' completed' : ''}`}
+                                onClick={() => {
+                                    handleStepNavigation(2)
+                                }}
+                                aria-label={
+                                    currentStep === 2
+                                        ? "Current Step: Travel Preferences"
+                                        : currentStep > 2
+                                            ? "Completed: Travel Preferences"
+                                            : "Travel Preferences"
+
+                                }>2. Travel Preferences
+                        </button>
+                        <button type="button"
+                                className={`step ${currentStep === 3 ? 'active' : ''}`}
+                                onClick={() => {
+                                    handleStepNavigation(3)
+                                }}
+                                aria-label="Health & Safety"
+                        >3. Health & Safety
+                        </button>
                     </div>
                 )}
 
