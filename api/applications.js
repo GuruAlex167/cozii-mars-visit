@@ -2,7 +2,7 @@ const serverless = require('serverless-http');
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
-require('dotenv').config({ path: __dirname + '/.env' });
+// require('dotenv').config({ path: __dirname + '/.env' });
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -43,11 +43,12 @@ const applicationSchema = new mongoose.Schema({
     status: { type: String, default: 'Pending', enum: ['Pending', 'Approved', 'Rejected'] }
 });
 
-const Applications = mongoose.model('Application', applicationSchema);
+const Applications = mongoose.models.Application || mongoose.model('Application', applicationSchema);
 
 
 app.post('/', async (req, res) => {
     try {
+        console.log("Incoming data:", JSON.stringify(req.body));
         const newApplication = new Applications(req.body);
         const savedApplication = await newApplication.save();
         res.status(201).json({
