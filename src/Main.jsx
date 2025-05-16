@@ -9,6 +9,7 @@ import NotFoundPage from "./NotFoundPage";
 
 function App() {
     const [currentStep, setCurrentStep] = useState(1);
+    const [maxStep, setMaxStep] = useState(1);
     const [formData, setFormData] = useState({
         // Personal info
         firstName: '',
@@ -33,7 +34,7 @@ function App() {
     });
     const [formErrors, setFormErrors] = useState({});
     const [isSubmitted, setIsSubmitted] = useState(false);
-
+    const [isLoading, setIsLoading] = useState(false);
 
     const handleChange = (e) => {
         const {name, value, type, checked} = e.target;
@@ -94,34 +95,69 @@ function App() {
     const handleNext = async () => {
         const isValid = await validateForm(currentStep);
         if (isValid) {
+            if (currentStep === maxStep) {
+                setMaxStep(maxStep + 1);
+            }
             setCurrentStep(currentStep + 1);
+            setTimeout(() => setFormErrors({}), 0);
         }
     };
 
     const handlePrev = () => {
-        console.log(currentStep);
         setCurrentStep(currentStep - 1);
+        setTimeout(() => setFormErrors({}), 0);
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        setIsLoading(true);
         console.log('Success');
         const isValid = await validateForm(currentStep);
         if (isValid) {
-            // send data to the server TODO
-            console.log('Form submitted:', formData);
-            setIsSubmitted(true);
-        } else{
+
+            // send data to the server
+            try {
+                const response = await fetch('http://localhost:5000/api/applications', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(formData),
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.message || 'Submission failed');
+                }
+                console.log('Form submitted:', formData);
+                setIsSubmitted(true);
+                setIsLoading(false);
+            } catch (error) {
+                console.error('Submission error:', error);
+                alert('There was an error submitting your application. Please try again.');
+            } finally {
+                setIsLoading(false);
+            }
+
+        } else {
             console.log("something failed.");
+            setIsLoading(false);
         }
     };
 
+    const handleStepNavigation = (step) => {
+        if (step < maxStep) {
+            setCurrentStep(step);
+        }
+        return step;
+    }
 
     const renderForm = () => {
         switch (currentStep) {
             case 1:
                 return <>
-                    <PersonalInfoForm formData={formData} handleChange={handleChange} formErrors={formErrors} />
+                    <PersonalInfoForm formData={formData} handleChange={handleChange} formErrors={formErrors}/>
                     <div className="button-group">
                         <div></div>
                         {/* Empty div to maintain flex layout */}
@@ -130,23 +166,23 @@ function App() {
                 </>;
             case 2:
                 return <>
-                    <TravelPreferences formData={formData} handleChange={handleChange} formErrors={formErrors} />
+                    <TravelPreferences formData={formData} handleChange={handleChange} formErrors={formErrors}/>
                     <div className="button-group">
                         <button type="button" onClick={handlePrev}>Previous</button>
                         <button type="button" onClick={handleNext}>Next</button>
                     </div>
-                    </>;
+                </>;
             case 3:
                 return <>
-                    <HealthAndSafetyForm formData={formData} handleChange={handleChange} formErrors={formErrors} />
+                    <HealthAndSafetyForm formData={formData} handleChange={handleChange} formErrors={formErrors}/>
                     <div className="button-group">
-                <button type="button" onClick={handlePrev}>Previous</button>
-                <button type="submit">Submit Application</button>
-            </div>
-            </>;
+                        <button type="button" onClick={handlePrev}>Previous</button>
+                        <button type="submit" disabled={isLoading}>Submit Application</button>
+                    </div>
+                </>;
 
             default:
-                return <NotFoundPage />;
+                return <NotFoundPage/>;
         }
     };
 
@@ -167,9 +203,21 @@ function App() {
 
                 {!isSubmitted && (
                     <div className="progress-indicator">
-                        <div className={`step ${currentStep === 1 ? 'active' : ''}`}>1. Personal Info</div>
-                        <div className={`step ${currentStep === 2 ? 'active' : ''}`}>2. Travel Preferences</div>
-                        <div className={`step ${currentStep === 3 ? 'active' : ''}`}>3. Health & Safety</div>
+                        <div className={`step ${currentStep === 1
+                            ? 'active'
+                            : ''}`}
+                             onClick={() => {handleStepNavigation(1)}}>1. Personal Info
+                        </div>
+                        <div className={`step ${currentStep === 2
+                            ? 'active'
+                            : ''}`}
+                             onClick={() => {handleStepNavigation(2)}}>2. Travel Preferences
+                        </div>
+                        <div className={`step ${currentStep === 3
+                            ? 'active'
+                            : ''}`}
+                             onClick={() => {handleStepNavigation(3)}}>3. Health & Safety
+                        </div>
                     </div>
                 )}
 
