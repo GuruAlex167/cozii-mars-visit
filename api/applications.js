@@ -1,3 +1,4 @@
+const serverless = require('serverless-http');
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
@@ -9,11 +10,11 @@ const PORT = process.env.PORT || 5000;
 // Middleware
 app.use(cors());
 app.use(express.json());
-
-mongoose.connect(process.env.MONGODB_URI)
-    .then(() => console.log('MongoDB connected'))
-    .catch(err => console.error('MongoDB connection error:', err));
-
+if (!mongoose.connection.readyState) {
+    mongoose.connect(process.env.MONGODB_URI)
+        .then(() => console.log('MongoDB connected'))
+        .catch(err => console.error('MongoDB connection error:', err));
+}
 
 const applicationSchema = new mongoose.Schema({
     // Personal Information
@@ -42,12 +43,12 @@ const applicationSchema = new mongoose.Schema({
     status: { type: String, default: 'Pending', enum: ['Pending', 'Approved', 'Rejected'] }
 });
 
-const Application = mongoose.model('Application', applicationSchema);
+const Applications = mongoose.model('Application', applicationSchema);
 
 
-app.post('/api/applications', async (req, res) => {
+app.post('/', async (req, res) => {
     try {
-        const newApplication = new Application(req.body);
+        const newApplication = new Applications(req.body);
         const savedApplication = await newApplication.save();
         res.status(201).json({
             success: true,
@@ -64,9 +65,9 @@ app.post('/api/applications', async (req, res) => {
     }
 });
 
-app.get('/api/applications/:id', async (req, res) => {
+app.get('/:id', async (req, res) => {
     try {
-        const application = await Application.findById(req.params.id);
+        const application = await Applications.findById(req.params.id);
         if (!application) {
             return res.status(404).json({
                 success: false,
@@ -92,4 +93,4 @@ if (require.main === module) {
     });
 }
 
-module.exports = app;
+module.exports = serverless(app);
